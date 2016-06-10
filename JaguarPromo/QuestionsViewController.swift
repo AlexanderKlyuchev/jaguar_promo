@@ -11,6 +11,7 @@ import UIKit
 class QuestionsViewController: UIViewController {
     var m_contentView: UIView!
     var m_title: UITextView!
+    var m_currentNum: Int = 1;
     
     let q_strings=[
         [
@@ -85,7 +86,7 @@ class QuestionsViewController: UIViewController {
     var answers = [answer(answer: 0,correct_answer: 1),answer(answer: 0,correct_answer: 1),answer(answer: 0,correct_answer: 1),
     answer(answer: 0,correct_answer: 1),answer(answer: 0,correct_answer: 1),answer(answer: 0,correct_answer: 1)]
     
-    let result_str="Ваши результаты:\n80% успешных ответов"
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,17 +105,6 @@ class QuestionsViewController: UIViewController {
         m_title.editable=false;
         
         
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = NSTextAlignment.Center
-        let attributedString = NSMutableAttributedString(string:result_str)
-        attributedString.addAttribute(NSForegroundColorAttributeName,value: UIColor.redColor(), range: NSRange(location: 0, length: result_str.characters.count))
-        attributedString.addAttribute(NSFontAttributeName, value: UIFont(name: "HelveticaNeue-UltraLight", size: 20)!, range: NSRange(location: 0, length: result_str.characters.count))
-       
-        attributedString.addAttribute(NSParagraphStyleAttributeName, value: paragraphStyle, range: NSRange(location: 0, length: result_str.characters.count))
-        attributedString.addAttribute(NSForegroundColorAttributeName, value: UIColor.whiteColor() , range: NSRange(location: 17, length: result_str.characters.count - 17))
-        
-        m_title.attributedText=attributedString
-        
         m_contentView=UIView()
         //m_contentView.center=self.view.center
         //m_contentView.frame.size=CGSizeMake(rect.size.width,rect.size.height/2)
@@ -124,7 +114,15 @@ class QuestionsViewController: UIViewController {
         self.view.addSubview(m_contentView)
         self.view.addSubview(m_title)
         
-        createContentView(1)
+        let back_btn=UIButton()
+        back_btn.frame=CGRectMake(20, 20, 20, 20)
+        back_btn.setImage(UIImage(named: "pag"), forState: UIControlState.Normal)
+        back_btn.addTarget(self, action: #selector(QuestionsViewController.backBtnPressed(_:)), forControlEvents: UIControlEvents.TouchUpInside)
+        
+        
+        self.view.addSubview(back_btn)
+        
+        createContentView(m_currentNum)
         //createResultsContentView()
         
     }
@@ -144,6 +142,8 @@ class QuestionsViewController: UIViewController {
             return;
         }
         
+        m_currentNum = q_num;
+        
         m_title.font=UIFont (name: "HelveticaNeue-UltraLight", size: 20)
         m_title.textColor=UIColor.redColor()
         m_title.textAlignment=NSTextAlignment.Center
@@ -151,12 +151,11 @@ class QuestionsViewController: UIViewController {
        
         let center_img=UIImageView()
         
-        center_img.frame=CGRectMake(m_contentView.frame.size.width/2 - 50 ,m_contentView.frame.size.width/2 - 50 , 100, 100)
+        center_img.frame=CGRectMake(m_contentView.frame.size.width/2 - 50 ,m_contentView.frame.size.width/2 + 50 , 100, 100)
         
         center_img.image=UIImage(named: String(q_num))
         
         m_contentView.addSubview(center_img);
-        
         
         let angle_delta: Double = 360/5
         var angle = 0.0
@@ -165,7 +164,7 @@ class QuestionsViewController: UIViewController {
         while(angle < 360){
             let button=UIButton()
             button.layer.cornerRadius=30;
-            button.setImage(UIImage(named: "q_btn_bg"), forState: UIControlState.Normal)
+            button.setImage(UIImage(named: "new_question"), forState: UIControlState.Normal)
             let x=220*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
             let y=220*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
             button.frame=CGRectMake(CGFloat(x), CGFloat(y),  60, 60)
@@ -175,10 +174,11 @@ class QuestionsViewController: UIViewController {
             button.addTarget(self, action: #selector(QuestionsViewController.answerQuestion(_:)), forControlEvents: UIControlEvents.TouchUpInside)
             
             let title=UITextView()
-            let x2=290*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
-            let y2=290*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
-            title.frame=CGRectMake(CGFloat(x2), CGFloat(y2), 100, 50)
+            var x2=260*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
+            let y2=260*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
+            
             title.backgroundColor=UIColor.clearColor()
+            title.frame=CGRectMake(CGFloat(x2), CGFloat(y2), 100, 100)
             title.userInteractionEnabled=false;
             title.scrollEnabled=true;
             title.font=UIFont (name: "HelveticaNeue-UltraLight", size: 10)
@@ -186,10 +186,16 @@ class QuestionsViewController: UIViewController {
             title.editable=false;
             title.textAlignment=NSTextAlignment.Left
             title.text=q_strings[q_num-1][num];
+            
+            if(x2<x){
+                x2 = x2 - 100
+            }
+            title.frame=CGRectMake(CGFloat(x2), CGFloat(y2), 100, 100)
+            //title.center=CGPoint(x:x2,y:y2)
             num+=1;
             
             m_contentView.addSubview(button);
-            //m_contentView.addSubview(title);
+            m_contentView.addSubview(title);
             
             angle+=angle_delta;
         }
@@ -201,6 +207,17 @@ class QuestionsViewController: UIViewController {
     func createResultsContentView(){
         clearContentView()
         
+        var progress: Int = 0;
+        
+        for  i in answers {
+            if(i.answer == i.correct_answer){
+                progress+=1;
+            }
+        }
+        
+        progress = 100 * progress / answers.count
+        
+        let result_str="Ваши результаты:\n\(progress)% успешных ответов"
         
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = NSTextAlignment.Center
@@ -212,26 +229,46 @@ class QuestionsViewController: UIViewController {
         attributedString.addAttribute(NSForegroundColorAttributeName, value: UIColor.whiteColor() , range: NSRange(location: 17, length: result_str.characters.count - 17))
         
         m_title.attributedText=attributedString
-
+        
         
         let center_img=CircularProgress()
-        center_img.frame=CGRectMake(m_contentView.frame.size.width/2 - 150 ,0 , 300, 300)
-        center_img.angle=360
+        center_img.frame=CGRectMake(m_contentView.frame.size.width/2 - 150 ,m_contentView.frame.size.width/2, 300, 300)
+        
+        let angle2=Double((360*progress/100))
+        center_img.angle  = angle2
         center_img.roundedCorners=true
         center_img.trackColor=UIColor.clearColor()
         center_img.progressColors=[UIColor.whiteColor()]
         
+        let progress_text=UITextView()
+        
+        progress_text.backgroundColor=UIColor.clearColor()
+        progress_text.userInteractionEnabled=false;
+        progress_text.scrollEnabled=false;
+        progress_text.editable=false;
+        
+        progress_text.font=UIFont (name: "HelveticaNeue-UltraLight", size: 60)
+        progress_text.textColor=UIColor.redColor()
+        
+        progress_text.text=String(progress)+"%"
+        
+        let textSize = progress_text.intrinsicContentSize();
+        
+        progress_text.frame=CGRectMake(center_img.center.x  - textSize.width/2,center_img.center.y - textSize.height/2, 200,
+                                       100)
+        
         m_contentView.addSubview(center_img);
+        m_contentView.addSubview(progress_text)
         
         
-        let angle_delta: Double = 360/5
+        let angle_delta: Double = 360/6
         var angle = 0.0
-        var num=1;
+        var num=0;
         
-        while(angle < 180){
+        while(angle < 360){
             let button=UIButton()
             button.layer.cornerRadius=30;
-            button.setImage(UIImage(named: "q_btn_bg"), forState: UIControlState.Normal)
+            
             let x=220*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
             let y=220*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
             
@@ -239,11 +276,11 @@ class QuestionsViewController: UIViewController {
             button.center=CGPoint(x: x, y: y)
             button.tag=num
             
-            button.addTarget(self, action: #selector(QuestionsViewController.touchedShowCorrectAnswer(_:)), forControlEvents: UIControlEvents.TouchDown)
+            
             button.userInteractionEnabled=true
             let title=UITextView()
-            let x2=290*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
-            let y2=290*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
+            let x2=260*sin(angle * M_PI / 180.0) + Double(center_img.center.x)
+            let y2=260*cos(angle * M_PI / 180.0) + Double(center_img.center.y)
             title.frame=CGRectMake(CGFloat(x2), CGFloat(y2), 100, 100)
             title.backgroundColor=UIColor.clearColor()
             title.userInteractionEnabled=false;
@@ -253,8 +290,18 @@ class QuestionsViewController: UIViewController {
             title.font=UIFont (name: "HelveticaNeue-UltraLight", size: 10)
             title.textColor=UIColor.whiteColor()
             
-            let str_prefix="Верно! "
-            let res_str=str_prefix + q_strings[0][0]
+            let str_prefix: String;
+            if(answers[num].answer == answers[num].correct_answer){
+                button.setImage(UIImage(named: "new_question"), forState: UIControlState.Normal)
+                str_prefix="Верно! "
+            }else{
+                button.setImage(UIImage(named: "wrong_answer"), forState: UIControlState.Normal)
+                str_prefix="Неверно! "
+                button.addTarget(self, action: #selector(QuestionsViewController.touchedShowCorrectAnswer(_:)), forControlEvents: UIControlEvents.TouchDown)
+            }
+            
+            let res_str = str_prefix +  q_strings[num][ answers[num].answer ]
+
             let attributedString = NSMutableAttributedString(string: res_str)
             
             let paragraphStyle = NSMutableParagraphStyle()
@@ -271,13 +318,11 @@ class QuestionsViewController: UIViewController {
             num+=1;
             
             
-            
             m_contentView.addSubview(button);
             m_contentView.addSubview(title);
             
             angle+=angle_delta;
-            
-            print("angle \(angle)")
+        
         }
         
         
@@ -289,8 +334,9 @@ class QuestionsViewController: UIViewController {
         let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.Dark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
         let closeButon=UIButton()
-        closeButon.frame=CGRectMake(0,0,50,50)
-        closeButon.backgroundColor=UIColor.whiteColor()
+        closeButon.frame=CGRectMake(20,20,20,20)
+        closeButon.backgroundColor=UIColor.clearColor()
+        closeButon.setImage(UIImage(named: "close"), forState: UIControlState.Normal)
         closeButon.addTarget(self, action: #selector(QuestionsViewController.removeCorrectAnswer(_:)), forControlEvents: UIControlEvents.TouchUpInside)
         
         blurEffectView.tag=100;
@@ -298,7 +344,6 @@ class QuestionsViewController: UIViewController {
         blurEffectView.frame = view.bounds
         blurEffectView.addSubview(closeButon);
         blurEffectView.autoresizingMask = [.FlexibleWidth, .FlexibleHeight] // for supporting device rotation
-        
         
         
         let title=UITextView()
@@ -311,7 +356,7 @@ class QuestionsViewController: UIViewController {
         title.editable=false;
         
         let title_preffix="Вопрос \(q_num):\n";
-        let str=title_preffix + q_strings[q_num-1][0]
+        let str=title_preffix + q_strings[q_num][0]
         
     
         let paragraphStyle = NSMutableParagraphStyle()
@@ -337,7 +382,7 @@ class QuestionsViewController: UIViewController {
         answer.editable=false;
         
         let answer_preffix="Ваш ответ:\n";
-        let str2=answer_preffix + q_strings[q_num-1][1]
+        let str2=answer_preffix + q_strings[q_num][answers[q_num].answer]
         
         
         let paragraphStyle2 = NSMutableParagraphStyle()
@@ -355,7 +400,7 @@ class QuestionsViewController: UIViewController {
         
         
         let button=UIImageView()
-        button.image=UIImage(named: "q_btn_bg")
+        button.image=UIImage(named: "wrong_answer2")
     
         button.frame=CGRectMake(3*self.view.center.x/4, 0, 30, 30)
         button.center=CGPoint(x: self.view.center.x/4 , y: self.view.center.y/2)
@@ -372,7 +417,7 @@ class QuestionsViewController: UIViewController {
             answer.editable=false;
             
             let answer_preffix="Правильный ответ:\n";
-            let str2=answer_preffix + q_strings[q_num-1][2]
+            let str2=answer_preffix + q_strings[q_num][answers[q_num].correct_answer]
             
             
             let paragraphStyle2 = NSMutableParagraphStyle()
@@ -408,11 +453,27 @@ class QuestionsViewController: UIViewController {
     
     func answerQuestion(sender:UIButton)
     {
-        print("pressed button \(sender.tag)")
+        answers[m_currentNum - 1].answer=sender.tag
+        if(m_currentNum < 6){
+            createContentView(m_currentNum + 1)
+        }else{
+            m_currentNum+=1
+            createResultsContentView()
+        }
     }
     
     func touchedShowCorrectAnswer(sender:UIButton){
-        ShowCorrectAnswer(1);
+        ShowCorrectAnswer(sender.tag);
+    }
+    
+    
+    func backBtnPressed(sender:UIButton){
+        if(m_currentNum > 1){
+            createContentView(m_currentNum - 1)
+        }
+        else{
+            self.dismissViewControllerAnimated(true, completion: nil)
+        }
     }
     
     func removeCorrectAnswer(sender:UIButton){

@@ -507,7 +507,7 @@ public class CircularProgress: UIView {
             
             CGContextRestoreGState(ctx)
             
-            drawProgressText();
+            //drawProgressText();
             
             UIGraphicsPopContext()
         }

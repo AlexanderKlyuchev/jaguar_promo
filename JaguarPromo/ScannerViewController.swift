@@ -17,7 +17,7 @@ class ScannerViewController: UIViewController {
         
         
         let bg_view = UIImageView.init(frame: self.view.frame);
-        bg_view.image = UIImage.init(named: "scan_back")
+        bg_view.image = UIImage.init(named: "scan_bg")
         
         
         self.view.addSubview(bg_view);
@@ -25,10 +25,17 @@ class ScannerViewController: UIViewController {
         let center_btn=UIButton()
         
         let rect=self.view.frame;
-        center_btn.frame=CGRectMake(rect.size.width/3, rect.size.height/2,  250, 250)
+        center_btn.frame=CGRectMake(rect.size.width/3.7, rect.size.height/2,  250, 250)
         
         center_btn.setImage(UIImage(named:"scan_bg_big_btn"), forState: UIControlState.Normal)
         
+        
+        center_btn.addTarget(self, action: #selector(ScannerViewController.holdRelease(_:)), forControlEvents: UIControlEvents.TouchUpInside);
+        center_btn.addTarget(self, action: #selector(ScannerViewController.HoldDown(_:)), forControlEvents: UIControlEvents.TouchDown)
+        
+        center_btn.tag=100;
+        
+       /*
         let btn1=UIButton()
         let btn2=UIButton();
         let btn3=UIButton()
@@ -55,8 +62,7 @@ class ScannerViewController: UIViewController {
         btn5.addTarget(self, action: #selector(ScannerViewController.HoldDown(_:)), forControlEvents: UIControlEvents.TouchDown)
         
         
-        center_btn.addTarget(self, action: #selector(ScannerViewController.holdRelease(_:)), forControlEvents: UIControlEvents.TouchUpInside);
-        center_btn.addTarget(self, action: #selector(ScannerViewController.HoldDown(_:)), forControlEvents: UIControlEvents.TouchDown)
+       
         
         
         btn1.backgroundColor=UIColor.whiteColor()
@@ -78,16 +84,24 @@ class ScannerViewController: UIViewController {
         btn5.backgroundColor=UIColor.whiteColor()
         btn5.layer.cornerRadius=30;
         btn5.frame=CGRectMake(rect.size.width/1.2, rect.size.height/1.5,  60, 60)
-        
+        */
         
         self.view.addSubview(center_btn)
+        /*
         self.view.addSubview(btn1);
         self.view.addSubview(btn2);
         self.view.addSubview(btn3);
         self.view.addSubview(btn4);
         self.view.addSubview(btn5);
+        */
         
         
+    }
+    
+    
+    override func viewWillAppear(animated: Bool) {
+        m_pressed_btns=0;
+        super.viewWillAppear(animated)
     }
     
     //target functions
@@ -95,15 +109,21 @@ class ScannerViewController: UIViewController {
     {
         m_pressed_btns += 1;
         
-        if(m_pressed_btns == 1){
+        if(sender.tag == 100){
             let vc=QuestionsViewController();
             self.presentViewController(vc, animated: true, completion: nil)
         }
+        
+        if(m_pressed_btns > 6){
+            m_pressed_btns=0;
+        }
+        
+        print("pressed btns \(m_pressed_btns)")
     }
     
     func holdRelease(sender:UIButton)
     {
-        m_pressed_btns -= 1;
+        m_pressed_btns = 0;
     }
     
     
